@@ -10,14 +10,15 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#define BUF_LEN 501
+#define BUF_LEN 1024 
 
 
 int connectToHost(char* hostname, char* port) ;
+void chatWithHost(int sockfd, char* username) ;
 
 int main(int argc, char* argv[]) {
 
-    //get hostname and port
+    //check arguments
     char* port;
     char* hostname;
     
@@ -44,15 +45,32 @@ int main(int argc, char* argv[]) {
         }
     } while (strlen (username) > 10 );
 
-    
+    //create connection
     int sockfd = connectToHost(hostname, port);
 
-
     //chat
+    if (sockfd >= 0 ) {
+        chatWithHost(sockfd, username);
+    }
+
+    close(sockfd);
+
+    return 0;
+}
+
+
+
+/*--------------------------------  FUNCTIONS  -----------------------------------------*/
+
+
+
+//Description: handles user input and chat sending and receiving
+void chatWithHost(int sockfd, char* username) {
+
     char* userinput = NULL;
     char clientMessage[BUF_LEN];
     size_t maxbuffer = BUF_LEN;
-    char* serverMessage = malloc(BUF_LEN + 12);
+    char* serverMessage = malloc(BUF_LEN);
     int sizeRecv;
 
     while(1) {
@@ -93,16 +111,11 @@ int main(int argc, char* argv[]) {
         //null terminate received message
         serverMessage[sizeRecv] = '\0';
         printf("%s\n", serverMessage);
-
     }
     
-    free (serverMessage);
+    free(serverMessage);
     free(userinput);
-
-    close(sockfd);
-
-    return 0;
-}
+}    
 
 
 
