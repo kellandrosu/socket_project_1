@@ -10,56 +10,29 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#define PORT "33330"
-#define SERVER "flip1.engr.oregonstate.edu"
 #define BUF_LEN 501
 
 
+int connectToHost(char* hostname, char* port) ;
+
 int main(int argc, char* argv[]) {
 
+    //get hostname and port
     char* port;
     char* hostname;
-
-    int status;
-    struct addrinfo hints;
-    struct addrinfo *servinfo;
-
-    memset( &hints, 0, sizeof hints );
-
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-
+    
     if ( argc == 3 ) {
         hostname = argv[1];
         port = argv[2];    
-        status = getaddrinfo( hostname, port, &hints, &servinfo );    //get hostname info
     }
     else {       
-        status = getaddrinfo( SERVER, PORT, &hints, &servinfo );    //get hostname info
-    }
-
-    if( status != 0 ) {
-        fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
+        fprintf(stderr, "need arguments [hostname] [port]\n");
         exit(1);
     }
 
-      //create socket for connection
-    int sockfd = socket( servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol );
 
-    if ( sockfd < 0 )  {
-        fprintf(stderr, "socket error\n");
-        exit(1); 
-    }
-
-    if ( connect( sockfd, servinfo->ai_addr, servinfo->ai_addrlen ) < 0 ){
-        close(sockfd);
-        fprintf(stderr, "connect error\n");
-        exit(1); 
-    }
-
+    //get username
     char username[12];
-
-    //sign in
     do {
         printf("Enter your username: ");
         
@@ -71,14 +44,17 @@ int main(int argc, char* argv[]) {
         }
     } while (strlen (username) > 10 );
 
+    
+    int sockfd = connectToHost(hostname, port);
 
+
+    //chat
     char* userinput = NULL;
     char clientMessage[BUF_LEN];
     size_t maxbuffer = BUF_LEN;
     char* serverMessage = malloc(BUF_LEN + 12);
     int sizeRecv;
 
-    //chat
     while(1) {
        
         //get user input
@@ -105,10 +81,17 @@ int main(int argc, char* argv[]) {
             fprintf(stderr, "send error\n");
             exit(1);
         }
+        
+        //receive message
         sizeRecv = recv( sockfd, serverMessage, BUF_LEN + 12, 0);
+        
+        if( sizeRecv == 0 ) {
+            printf("connection closed\n");
+            break;
+        }
+
+        //null terminate received message
         serverMessage[sizeRecv] = '\0';
-
-
         printf("%s\n", serverMessage);
 
     }
@@ -119,4 +102,44 @@ int main(int argc, char* argv[]) {
     close(sockfd);
 
     return 0;
+}
+
+
+
+// Description: creates a connects with hostname and port.
+// Returns: socket file descriptor (int)
+int connectToHost(char* hostname, char* port) {
+
+    //open serverinfo
+    int status;
+    struct addrinfo hints;
+    struct addrinfo *servinfo;
+
+    memset( &hints, 0, sizeof hints );
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+
+    status = getaddrinfo( hostname, port, &hints, &servinfo );    //get hostname info
+        
+    if( status != 0 ) {
+        fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
+        exit(1);
+    }
+    
+
+    //create socket for connection
+    int sockfd = socket( servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol );
+
+    if ( sockfd < 0 )  {
+        fprintf(stderr, "socket error\n");
+        exit(1); 
+    }
+
+    if ( connect( sockfd, servinfo->ai_addr, servinfo->ai_addrlen ) < 0 ){
+        close(sockfd);
+        fprintf(stderr, "connect error\n");
+        exit(1); 
+    }
+
+    return sockfd;
 }
