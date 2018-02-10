@@ -1,3 +1,7 @@
+#   Author:     Andrius Kelly
+#   Date:       Feb 10, 2018
+#   Description: CS 372 Project 1 - Server side implimentation of basic chat program.
+
 from socket import *
 import sys
 

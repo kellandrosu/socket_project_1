@@ -1,3 +1,8 @@
+/*
+    Author:      Andrius Kelly
+    Date:        Feb 10, 2018
+    Description: CS 372 Project 1 - Client implimentation for basic chat program. 
+*/
 
 
 #include <stdio.h>
@@ -10,11 +15,14 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
+
 #define BUF_LEN 1024 
 
 
+//prototypes
 int connectToHost(char* hostname, char* port) ;
 void chatWithHost(int sockfd, char* username) ;
+
 
 int main(int argc, char* argv[]) {
 
@@ -158,5 +166,6 @@ int connectToHost(char* hostname, char* port) {
         exit(1); 
     }
 
+    free(servinfo);
     return sockfd;
 }
