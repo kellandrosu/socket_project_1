@@ -4,7 +4,8 @@ import sys
 myHandle = "HAL-9000"
 
 if not len(sys.argv) == 2:
-    serverPort = 33330
+    print("Usage: chatserv.py [port number]")
+    exit(1)
 else:
     serverPort = int(sys.argv[1])
 
@@ -15,32 +16,32 @@ serverSocket.bind( ('', serverPort) )
 #sets max connection queue to 1
 serverSocket.listen(1)
 
-print( "Listening on port " + str(serverPort) )
-
 while True:
     
+    print( "listening on port " + str(serverPort) + "..." )
     connectionSocket, addr = serverSocket.accept()
+    print("client has entered chat")
     data = connectionSocket.recv(1024)
+   
     
-    while data :
+    while data:           #chat while connection is open
         clientMessage = data.decode()
         print(clientMessage)
         
         sys.stdout.write( myHandle + "> ")
         userInput = input()
-        
-        print(userInput)
-        
+         
         if userInput == "\quit":
+            print("you closed chat")
             break
         
         myMessage = "%s> %s" % (myHandle, userInput)
-        print(myMessage)
         connectionSocket.send( myMessage.encode() )
         
         data = connectionSocket.recv(1024)
-    
+        
+        if not data:
+            print("client left chat")
 
-    print("client left chat")
     connectionSocket.close()
         

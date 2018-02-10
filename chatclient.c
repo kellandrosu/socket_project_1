@@ -18,21 +18,26 @@ void chatWithHost(int sockfd, char* username) ;
 
 int main(int argc, char* argv[]) {
 
-    //check arguments
     char* port;
     char* hostname;
     
+    
+    //check arguments
     if ( argc == 3 ) {
         hostname = argv[1];
         port = argv[2];    
     }
     else {       
-        fprintf(stderr, "need arguments [hostname] [port]\n");
+        fprintf(stderr, "Usage: chatclient [hostname] [port number]\n");
         exit(1);
     }
 
+   
+   //create connection
+    int sockfd = connectToHost(hostname, port);
 
-    //get username
+   
+   //get username
     char username[12];
     do {
         printf("Enter your username: ");
@@ -41,14 +46,12 @@ int main(int argc, char* argv[]) {
         while( (getchar()) != '\n'); //clear input buffer
         
         if (strlen (username) > 10 ) {
-            printf("Sorry, username must be 10 characters or less.\n\n");
+            printf("Sorry, username must be 10 characters or less.\n");
         }
     } while (strlen (username) > 10 );
-
-    //create connection
-    int sockfd = connectToHost(hostname, port);
-
-    //chat
+    
+   
+   //chat
     if (sockfd >= 0 ) {
         chatWithHost(sockfd, username);
     }
@@ -120,6 +123,7 @@ void chatWithHost(int sockfd, char* username) {
 
 
 // Description: creates a connects with hostname and port.
+// Exits on connection errors 
 // Returns: socket file descriptor (int)
 int connectToHost(char* hostname, char* port) {
 
